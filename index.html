@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Hot Board — Live AI Money · Models · Deals</title>
+<meta name="description" content="Live board of AI money-making news, large-model releases and AI deals & free credits. Auto-refreshed every 5 minutes. AI 搞钱 · 大模型 · 优惠，每 5 分钟实时刷新。">
+<meta property="og:title" content="AI Hot Board — Live AI Money · Models · Deals">
+<meta property="og:description" content="AI money-making, model releases & deals, refreshed every 5 minutes. Click any headline to read the original.">
+<meta property="og:type" content="website">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0e16">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f7fb">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+<style>
+  :root{
+    --bg:#0a0e16; --card:#121826; --card2:#0f1522; --text:#e6e9f0; --muted:#8b94a7;
+    --line:#1e2636; --accent:#6366f1; --accent2:#22d3ee;
+    --money:#10b981; --models:#8b5cf6; --deals:#f59e0b; --new:#ef4444;
+    --chipbg:#1a2233; --shadow:0 8px 30px rgba(0,0,0,.35);
+  }
+  html[data-theme="light"]{
+    --bg:#f5f7fb; --card:#ffffff; --card2:#f8fafc; --text:#111827; --muted:#6b7280;
+    --line:#e5e7eb; --chipbg:#eef1f6; --shadow:0 8px 30px rgba(15,23,42,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;}
+  a{color:inherit}
+  .wrap{max-width:860px;margin:0 auto;padding:0 16px}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+
+  /* ---- top breaking banner ---- */
+  #banner{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;
+    padding:10px 16px;color:#fff;background:linear-gradient(90deg,#4f46e5,#7c3aed 55%,#0891b2);
+    box-shadow:var(--shadow);transform:translateY(-110%);transition:transform .35s ease;}
+  #banner.show{transform:translateY(0)}
+  #banner.hidden{visibility:hidden}
+  .b-pill{flex:none;font-size:11px;font-weight:700;letter-spacing:.5px;background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:2px 9px;animation:pulse 1.4s infinite}
+  @keyframes pulse{50%{background:rgba(255,255,255,.38)}}
+  #bannerLink{flex:1;min-width:0;text-decoration:none;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #bannerLink:hover{text-decoration:underline}
+  #bannerMeta{flex:none;font-size:12px;opacity:.85;white-space:nowrap}
+  #bannerCount{flex:none;font-size:12px;background:rgba(0,0,0,.25);border-radius:999px;padding:2px 8px}
+  #bannerClose{flex:none;font-size:16px;line-height:1;opacity:.8;padding:2px 6px}
+  #bannerClose:hover{opacity:1}
+  @media (max-width:640px){#bannerMeta{display:none}}
+
+  /* ---- header ---- */
+  header{padding:26px 0 0}
+  .brand-row{display:flex;align-items:flex-start;gap:12px;justify-content:space-between;flex-wrap:wrap}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{font-size:34px;filter:drop-shadow(0 0 12px rgba(99,102,241,.55))}
+  h1{font-size:24px;margin:0;letter-spacing:.3px}
+  h1 small{font-size:13px;color:var(--muted);font-weight:500;margin-left:8px}
+  .tagline{margin:2px 0 0;color:var(--muted);font-size:13px}
+  .controls{display:flex;gap:8px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);
+    border-radius:999px;padding:7px 14px;font-size:13px;transition:border-color .15s, transform .1s}
+  .btn:hover{border-color:var(--accent)}
+  .btn:active{transform:scale(.96)}
+  .btn[disabled]{opacity:.5;cursor:wait}
+  .statusbar{display:flex;align-items:center;gap:8px;margin:14px 0 0;padding:9px 14px;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+  .dot{width:8px;height:8px;border-radius:50%;background:#6b7280;flex:none}
+  .dot.live{background:#10b981;box-shadow:0 0 0 0 rgba(16,185,129,.5);animation:ping 1.8s infinite}
+  .dot.warn{background:#f59e0b}
+  @keyframes ping{70%{box-shadow:0 0 0 7px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+  .spacer{flex:1}
+  #nextTick{font-variant-numeric:tabular-nums}
+
+  /* ---- tabs ---- */
+  .tabs{display:flex;gap:8px;margin:16px 0 10px;flex-wrap:wrap}
+  .tab{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 15px;
+    font-size:13.5px;color:var(--muted);transition:all .15s}
+  .tab b{font-weight:700;color:var(--text);margin-left:4px;font-variant-numeric:tabular-nums}
+  .tab:hover{border-color:var(--accent);color:var(--text)}
+  .tab.active{background:linear-gradient(90deg,var(--accent),#7c3aed);border-color:transparent;color:#fff}
+  .tab.active b{color:#fff}
+  .toolbar{display:flex;margin:0 0 14px}
+  #search{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 13px;
+    color:var(--text);font:inherit;font-size:13.5px;outline:none}
+  #search:focus{border-color:var(--accent)}
+
+  /* ---- feed ---- */
+  .feed{list-style:none;margin:0;padding:0}
+  .row{display:flex;gap:12px;padding:11px 12px;border:1px solid var(--line);background:var(--card);
+    border-radius:12px;margin-bottom:8px;cursor:pointer;transition:border-color .12s,transform .12s}
+  .row:hover{border-color:var(--accent);transform:translateX(3px)}
+  .row.flash{animation:flash 2.2s ease-out}
+  @keyframes flash{0%{background:rgba(99,102,241,.28)}100%{background:var(--card)}}
+  .rank{flex:none;width:26px;text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:13px;color:var(--muted);padding-top:2px}
+  .row .body{flex:1;min-width:0}
+  .row .t{display:block;text-decoration:none;font-size:14.5px;font-weight:600;line-height:1.45;word-break:break-word}
+  .row .t:hover{color:var(--accent2)}
+  .meta{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center}
+  .chip{font-size:11.5px;color:var(--muted);background:var(--chipbg);border-radius:6px;padding:2px 8px;white-space:nowrap}
+  .pill{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px}
+  .pill.money{color:var(--money);background:rgba(16,185,129,.12)}
+  .pill.models{color:var(--models);background:rgba(139,92,246,.14)}
+  .pill.deals{color:var(--deals);background:rgba(245,158,11,.14)}
+  .pill.new{color:#fff;background:var(--new)}
+  .stat{color:var(--accent2)}
+  .empty{text-align:center;color:var(--muted);padding:48px 0;font-size:14px}
+  #moreBtn{display:block;margin:14px auto 8px}
+  footer{margin:34px 0 44px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:16px}
+  footer a{color:var(--accent2);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  noscript{display:block;text-align:center;padding:30px;color:var(--deals)}
+</style>
+</head>
+<body>
+
+<div id="banner" class="hidden" aria-live="polite">
+  <span class="b-pill" id="bPill">NEW</span>
+  <a id="bannerLink" href="#" target="_blank" rel="noopener"><span id="bannerTitle"></span></a>
+  <span id="bannerMeta"></span>
+  <span id="bannerCount"></span>
+  <button id="bannerClose" title="Dismiss" aria-label="Dismiss">✕</button>
+</div>
+
+<header class="wrap">
+  <div class="brand-row">
+    <div class="brand">
+      <span class="logo">📡</span>
+      <div>
+        <h1><span data-i18n="brand">AI Hot Board</span><small data-i18n="brandSub">live</small></h1>
+        <p class="tagline" data-i18n="tagline">AI money-making · model releases · deals — auto-refreshed every 5 minutes</p>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="refreshBtn">⟳ <span data-i18n="refresh">Refresh</span></button>
+      <button class="btn" id="themeBtn" aria-label="Toggle theme">🌗</button>
+      <button class="btn" id="langBtn">中文</button>
+    </div>
+  </div>
+  <div class="statusbar">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">Connecting to live sources…</span>
+    <span class="spacer"></span>
+    <span id="nextTick"></span>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-cat="all">🔥 <span data-i18n="tabAll">All</span><b id="cnt-all">0</b></button>
+    <button class="tab" data-cat="money">💰 <span data-i18n="tabMoney">Money</span><b id="cnt-money">0</b></button>
+    <button class="tab" data-cat="models">🧠 <span data-i18n="tabModels">Models</span><b id="cnt-models">0</b></button>
+    <button class="tab" data-cat="deals">🎁 <span data-i18n="tabDeals">Deals</span><b id="cnt-deals">0</b></button>
+  </nav>
+  <div class="toolbar"><input id="search" type="search" data-i18n-ph="searchPh" placeholder="Filter titles…"></div>
+</header>
+
+<main class="wrap">
+  <ol class="feed" id="feed"></ol>
+  <div class="empty" id="empty" hidden data-i18n="empty">Nothing here yet — waiting for the next fetch.</div>
+  <button class="btn" id="moreBtn" hidden data-i18n="loadMore">Load more</button>
+</main>
+
+<footer class="wrap">
+  <div data-i18n="footNote">Aggregated from public sources — Hacker News, dev.to, GitHub, Hugging Face and Google News RSS. Click any headline to open the original article. Everything runs in your browser; nothing is tracked or uploaded.</div>
+  <p style="margin:8px 0 0"><span data-i18n="sources">Sources</span>: Hacker News · dev.to · GitHub · Hugging Face · Google News · TechCrunch · The Verge · Ars Technica · 爱范儿 · 少数派</p>
+</footer>
+
+<noscript data-i18n="noscript">This board needs JavaScript to fetch live news.</noscript>
+
+<script type="module">
+/* AI Hot Board — client. Live client-side sources poll every 5 min; the GitHub Action
+   pipeline (scripts/update-data.mjs) supplies RSS items via data.json. Keep classification
+   keyword lists in sync between this file and that script. */
+const POLL_MS = 5 * 60 * 1000;   // 5 minutes
+const MAX_AGE_H = 72;
+const PAGE = 60;
+
+const $ = (s) => document.querySelector(s);
+
+/* ---------- i18n (English prefilled in HTML; zh swapped at runtime) ---------- */
+const I18N = {
+  en: {
+    title: 'AI Hot Board — Live AI Money · Models · Deals',
+    brand: 'AI Hot Board', brandSub: 'live',
+    tagline: 'AI money-making · model releases · deals — auto-refreshed every 5 minutes',
+    refresh: 'Refresh', tabAll: 'All', tabMoney: 'Money', tabModels: 'Models', tabDeals: 'Deals',
+    searchPh: 'Filter titles…', loadMore: 'Load more', empty: 'Nothing here yet — waiting for the next fetch.',
+    breaking: 'NEW', latest: 'LATEST', newBadge: 'NEW', dismiss: 'Dismiss',
+    justNow: 'just now', minAgo: '{n}m ago', hourAgo: '{n}h ago', dayAgo: '{n}d ago',
+    sourcesWord: 'sources', itemsWord: 'items', updatedWord: 'Updated', nextWord: 'Next refresh',
+    catMoney: 'Money', catModels: 'Models', catDeals: 'Deal',
+    offlineNote: 'Live sources unreachable — showing cached/sample items.',
+    loading: 'Fetching live sources…',
+    footNote: 'Aggregated from public sources — Hacker News, dev.to, GitHub, Hugging Face and Google News RSS. Click any headline to open the original article. Everything runs in your browser; nothing is tracked or uploaded.',
+    sources: 'Sources',
+  },
+  zh: {
+    title: 'AI 热榜 — AI 搞钱 · 大模型 · 优惠，实时更新',
+    brand: 'AI 热榜', brandSub: '实时',
+    tagline: 'AI 创业搞钱 · 大模型动态 · 优惠福利 — 每 5 分钟自动刷新',
+    refresh: '刷新', tabAll: '全部', tabMoney: '搞钱', tabModels: '大模型', tabDeals: '优惠',
+    searchPh: '筛选标题…', loadMore: '加载更多', empty: '暂无内容 — 等待下次抓取。',
+    breaking: '新资讯', latest: '最新', newBadge: '新', dismiss: '关闭',
+    justNow: '刚刚', minAgo: '{n} 分钟前', hourAgo: '{n} 小时前', dayAgo: '{n} 天前',
+    sourcesWord: '个源', itemsWord: '条', updatedWord: '更新于', nextWord: '下次刷新',
+    catMoney: '搞钱', catModels: '模型', catDeals: '优惠',
+    offlineNote: '在线源不可达 — 显示缓存/示例数据。',
+    loading: '正在抓取实时源…',
+    footNote: '聚合自公开来源 — Hacker News、dev.to、GitHub、Hugging Face、Google News RSS 等。点击任意标题跳转原文。全部在浏览器本地运行，不追踪不上传。',
+    sources: '数据源',
+  },
+};
+
+/* ---------- classification (keep in sync with scripts/update-data.mjs) ---------- */
+const MONEY_KW = [
+  /\bfund(ed|ing|rais\w*)?\b/i, /\braise[ds]?\b/i, /\bseries [abc]\b/i, /\bseed (round|funding)\b/i,
+  /\bvalued at\b/i, /\bvaluation\b/i, /\bacqui(f|s)\w*/i, /\bmerger\b/i, /\bipo\b/i, /\brevenue\b/i,
+  /\barr\b/i, /\bmonet\w+/i, /\bprofitab\w+/i, /\bbillion\b/i, /\bventure\b/i, /\bstartup\b/i,
+  /\by combinator\b/i, /\bvc funding\b/i,
+  /融资/, /创投/, /创业/, /估值/, /收购/, /并购/, /上市/, /变现/, /搞钱/, /副业/, /月入/, /营收/, /商业化/, /赚钱/,
+];
+const DEALS_KW = [
+  /\bfree (credits?|tier|trial|plan|access)\b/i, /\bcoupon\b/i, /\bpromo( code)?\b/i, /\bdiscount\b/i,
+  /(\d+)%\s*off/i, /\bgiveaway\b/i, /\bblack friday\b/i, /\bdeal(s)?\b/i,
+  /优惠/, /折扣/, /免费/, /白嫖/, /福利/, /额度/, /代金券/, /特价/, /立减/, /半价/,
+];
+function classify(text, fallback) {
+  let money = 0, deals = 0, models = 0;
+  for (const re of MONEY_KW) if (re.test(text)) money++;
+  for (const re of DEALS_KW) if (re.test(text)) deals++;
+  for (const re of [
+    /\b(gpt-?\w+|chatgpt|claude|gemini|llama|qwen|deepseek|mistral|kimi|glm|grok|copilot|sora|midjourney)\b/i,
+    /\bllms?\b/i, /\blarge language model/i, /open[- ]?(source|weights)/i, /\bbenchmark\b/i,
+    /\bcontext window\b/i, /\bfine-?tun/i, /多模态/, /开源/, /模型/, /推理能力/, /文生图/, /文生视频/, /智能体/,
+    /\bai\b/i, /人工智能/,
+  ]) if (re.test(text)) models++;
+  deals *= 1.5;
+  const best = Math.max(money, deals, models);
+  if (best === 0) return fallback;
+  if (best === deals) return 'deals';
+  if (best === money) return 'money';
+  return 'models';
+}
+
+/* ---------- bundled fallback (real items snapshot; used only if everything fails) ---------- */
+const SEED = /*seed*/[{"i":"xkpk2f","t":"跳出大模型：通用人工智能发展简史","u":"https://news.google.com/rss/articles/CBMigwFBVV95cUxPanV3b0dmUFA3MUpNOUgzeWd0RE5oel9IT0JqZ0Z3QW1jLXg1QmtWcnQ5WXV4RWJSN3hwYzJCQ24tXzhGMGtXTUY1RkJYX000bktCLUpleEZiY0Z3bnkxcDZRdzJ6QmoxX2htaEFWYVFTSnZXTUJ5UjNIU1gzUGQ5UXpQVQ?oc=5","s":"手机新浪网","c":"models","d":"2026-09-24T16:26:03.000Z","g":"z"},{"i":"pxyjai","t":"Gemini can now call businesses for you so you don’t have to wait on hold","u":"https://www.theverge.com/ai-artificial-intelligence/1000116/google-gemini-business-phone-calls","s":"The Verge","c":"models","d":"2026-09-24T16:15:24.000Z","g":"e"},{"i":"14fsyv0","t":"LLM Security Leaderboard Now Ranks Every Modality Where Agent Risk Lives: Text, Image, and Audio","u":"https://news.google.com/rss/articles/CBMib0FVX3lxTE1xQURNeGVaLVBxeng3YVc2blpLQ196dkl5dnQ5VHBFbjRyOGFabUV0YXNtU1RtNTlOa1FjR0FVUVRUN1I3VThHU1NUVWZ6MXRSbkltLWNTVDhjTGdrM3RDdmQ1SHZJQkRHVkZVOVlfMA?oc=5","s":"Cisco Blogs","c":"models","d":"2026-09-24T16:03:54.000Z","g":"e"},{"i":"1338dmz","t":"OpenAI agent “didn’t accept no for an answer” in Australian government breach","u":"https://arstechnica.com/ai/2026/09/openai-agent-didnt-accept-no-for-an-answer-in-australian-government-breach/","s":"Ars Technica","c":"models","d":"2026-09-24T16:01:16.000Z","g":"e"},{"i":"1mc7z5y","t":"Google tests letting Gemini call businesses for you","u":"https://techcrunch.com/2026/09/24/google-tests-letting-gemini-make-phone-calls-initially-for-us-pixel-owners/","s":"TechCrunch","c":"models","d":"2026-09-24T16:00:00.000Z","g":"e"},{"i":"1bdxd8x","t":"Agent 时代来了，3D 生成大模型接下来比什么？","u":"https://news.google.com/rss/articles/CBMiTEFVX3lxTE9LQ3R1cDlnMzlSSEpfc1Z1eFdqR0pYMkVieFRIOFM0SXVBSUIwRE1WY2FsTVROYW9NUjBBLS1GS29ZUlU5aFJSb1c5aVY?oc=5","s":"极客公园","c":"models","d":"2026-09-24T15:55:33.000Z","g":"z"},{"i":"js3xk9","t":"It’s sinister that Meta’s Muse AI mascot is so cute","u":"https://www.theverge.com/column/999999/optimizer-meta-muse-ai-cute","s":"The Verge","c":"models","d":"2026-09-24T15:15:42.000Z","g":"e"},{"i":"ulot3h","t":"AI大模型百花齐放，连连智枢却要把它们管起来？","u":"https://news.google.com/rss/articles/CBMiiAFBVV95cUxORVZ3YTBBd2VkZWZGNzdzY1otcktQT1ltNTM5a0VlR1QxS3o4SFZJdnRzX25OQW50QXFCUk1zMl9IMzJEcDNfOUZWVmd2UmZ2SkItQ2NaMXVlR1FmR1BmamxJWGVwc1EtRGdVVU95U0tFczlxQm1zcEpvV2dyMXVEVmt5ZXFFcUpu?oc=5","s":"搜狐网","c":"models","d":"2026-09-24T15:01:46.000Z","g":"z"},{"i":"ktzi2","t":"Shield AI, Waabi, and General Motors on building AI when failure is not an option at TechCrunch Disrupt 2026","u":"https://techcrunch.com/2026/09/24/shield-ai-waabi-and-general-motors-on-building-ai-when-failure-is-not-an-option-at-techcrunch-disrupt-2026/","s":"TechCrunch","c":"models","d":"2026-09-24T15:00:00.000Z","g":"e"},{"i":"z5giwr","t":"Google is sending an AI satellite into space next week","u":"https://www.theverge.com/tech/1000015/google-ai-satellite-space-project-suncatcher","s":"The Verge","c":"models","d":"2026-09-24T14:54:18.000Z","g":"e"},{"i":"1p5outb","t":"Meta’s Muse AI Charms can interact with each other","u":"https://www.theverge.com/tech/999944/meta-muse-charm-ai-interact-5g-modem","s":"The Verge","c":"models","d":"2026-09-24T14:35:06.000Z","g":"e"},{"i":"1pvfq10","t":"TechCrunch Disrupt 2026: Cal AI’s Zach Yadegari on how to create viral growth and capitalize on it","u":"https://techcrunch.com/2026/09/24/techcrunch-disrupt-2026-cal-ais-zach-yadegari-on-how-to-create-viral-growth-and-capitalize-on-it/","s":"TechCrunch","c":"models","d":"2026-09-24T14:30:00.000Z","g":"e"}];
+
+/* ---------- state & storage ---------- */
+const state = {
+  items: [], seen: new Map(), bq: [], bi: 0, bTimer: null,
+  cat: 'all', q: '', lang: 'en', ds: '', rendered: PAGE,
+  lastUp: null, nextAt: 0, freshIds: new Set(), busy: false, initShown: false,
+  okCount: 0, bIsLatest: false,
+};
+const store = {
+  get: (k, fb) => { try { const v = localStorage.getItem(k); return v == null ? fb : JSON.parse(v); } catch { return fb; } },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+/* ---------- helpers ---------- */
+function fetchWithTimeout(url, ms = 9000, opts = {}) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { cache: 'no-store', signal: ctrl.signal, ...opts }).finally(() => clearTimeout(t));
+}
+const hash = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(36); };
+const normUrl = (u) => String(u).replace(/^https?:\/\//, '').replace(/[?#].*$/, '').replace(/\/+$/, '').toLowerCase();
+const titleKey = (t) => String(t).toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, '').slice(0, 80);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtK = (n) => n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n);
+function ago(iso) {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 90) return t('justNow');
+  if (s < 3600) return t('minAgo').replace('{n}', Math.round(s / 60));
+  if (s < 86400) return t('hourAgo').replace('{n}', Math.round(s / 3600));
+  return t('dayAgo').replace('{n}', Math.round(s / 86400));
+}
+const t = (k) => I18N[state.lang][k] ?? I18N.en[k] ?? k;
+
+/* ---------- live client sources (CORS-enabled public APIs) ---------- */
+async function fetchHN() {
+  const base = 'https://hn.algolia.com/api/v1/search_by_date?tags=story';
+  const batches = [
+    { q: 'AI', n: 50, fb: 'models' },
+    { q: 'AI funding', n: 15, fb: 'money' },
+    { q: 'AI free', n: 15, fb: 'deals' },
+  ];
+  const res = await Promise.allSettled(batches.map((b) =>
+    fetchWithTimeout(`${base}&query=${encodeURIComponent(b.q)}&hitsPerPage=${b.n}`).then((r) => r.json())));
+  const out = [];
+  res.forEach((r, i) => {
+    if (r.status !== 'fulfilled' || !Array.isArray(r.value?.hits)) return;
+    for (const h of r.value.hits) {
+      const title = h.title || h.story_title;
+      if (!title) continue;
+      const d = h.created_at;
+      if ((Date.now() - new Date(d)) / 36e5 > 48) continue;
+      out.push({
+        id: 'hn' + h.objectID, t: title,
+        u: h.url || h.story_url || `https://news.ycombinator.com/item?id=${h.objectID}`,
+        s: 'Hacker News', c: classify(title, batches[i].fb), d, g: 'e', p: h.points || 0,
+      });
+    }
+  });
+  if (!out.length) throw new Error('hn empty');
+  return out;
+}
+async function fetchDevTo() {
+  const r = await fetchWithTimeout('https://dev.to/api/articles?tag=ai&per_page=25');
+  const arr = await r.json();
+  const out = arr.filter((a) => (Date.now() - new Date(a.published_at)) / 36e5 <= MAX_AGE_H).map((a) => ({
+    id: 'dt' + a.id, t: a.title, u: a.url, s: 'dev.to',
+    c: classify(a.title + ' ' + (a.description || ''), 'models'), d: a.published_at,
+    g: 'e', p: a.positive_reactions_count || 0,
+  }));
+  if (!out.length) throw new Error('devto empty');
+  return out;
+}
+async function fetchGitHub() {
+  const since = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+  const r = await fetchWithTimeout(`https://api.github.com/search/repositories?q=topic:llm+created:%3E${since}&sort=stars&order=desc&per_page=20`,
+    9000, { headers: { Accept: 'application/vnd.github+json' } });
+  const j = await r.json();
+  const out = (j.items || []).map((x) => ({
+    id: 'gh' + x.id, t: x.full_name + (x.description ? ' — ' + x.description : ''),
+    u: x.html_url, s: 'GitHub', c: 'models', d: x.created_at, g: 'e', st: x.stargazers_count || 0,
+  }));
+  if (!out.length) throw new Error('github empty');
+  return out;
+}
+async function fetchHF() {
+  const r = await fetchWithTimeout('https://huggingface.co/api/models?sort=lastModified&direction=-1&limit=100');
+  const arr = await r.json();
+  const seenNames = new Set();
+  const out = [];
+  for (const m of arr) {
+    if (!m.id || (Date.now() - new Date(m.createdAt)) / 864e5 > 7) continue;
+    if (/gguf|awq|gptq|bnb|onnx|coreml/i.test(m.id)) continue;
+    if ((m.downloads || 0) < 100 && (m.likes || 0) < 5) continue;
+    const name = m.id.split('/').pop().toLowerCase();
+    if (seenNames.has(name)) continue;
+    seenNames.add(name);
+    out.push({
+      id: 'hf' + hash(m.id), t: m.id, u: `https://huggingface.co/${m.id}`, s: 'Hugging Face',
+      c: 'models', d: m.createdAt, g: 'e', dn: m.downloads || 0,
+    });
+  }
+  if (!out.length) throw new Error('hf empty');
+  return out.slice(0, 15);
+}
+async function fetchPipeline() {
+  const r = await fetchWithTimeout(`data.json?t=${Date.now()}`, 8000);
+  const j = await r.json();
+  const out = (j.items || []).filter((x) => (Date.now() - new Date(x.d)) / 36e5 <= MAX_AGE_H)
+    .map((x) => ({ id: 'p' + x.i, t: x.t, u: x.u, s: x.s, c: x.c, d: x.d, g: x.g || 'e', p: x.p, st: x.st }));
+  if (!out.length) throw new Error('pipeline empty');
+  return out;
+}
+const SOURCES = [
+  { name: 'Feeds', run: fetchPipeline },
+  { name: 'Hacker News', run: fetchHN },
+  { name: 'GitHub', run: fetchGitHub },
+  { name: 'Hugging Face', run: fetchHF },
+  { name: 'dev.to', run: fetchDevTo },
+];
+
+/* ---------- merge & new-item detection ---------- */
+function ingest(lists) {
+  const byId = new Map(state.items.map((x) => [x.id, x]));
+  const seenTitles = new Set(state.items.map((x) => titleKey(x.t)));
+  let added = 0;
+  for (const list of lists) {
+    if (list.status !== 'fulfilled' || !Array.isArray(list.value)) continue;
+    for (const it of list.value) {
+      if (!it || !it.u || !it.t) continue;
+      const tk = titleKey(it.t);
+      const id = it.id || 'x' + hash(normUrl(it.u) + tk);
+      if (byId.has(id) || seenTitles.has(tk)) continue;
+      seenTitles.add(tk); byId.set(id, it); added++;
+    }
+  }
+  state.items = [...byId.values()]
+    .sort((a, b) => String(b.d).localeCompare(String(a.d)))
+    .slice(0, 400);
+  return added;
+}
+function detectFresh(fetchedLists) {
+  const fresh = [];
+  for (const list of fetchedLists) {
+    if (list.status !== 'fulfilled' || !Array.isArray(list.value)) continue;
+    for (const it of list.value) {
+      if (!it || state.seen.has(it.id)) continue;
+      state.seen.set(it.id, Date.now());
+      if ((Date.now() - new Date(it.d).getTime()) / 36e5 < 36) fresh.push(it);
+    }
+  }
+  // prune seen store
+  if (state.seen.size > 3000) {
+    state.seen = new Map([...state.seen].sort((a, b) => a[1] - b[1]).slice(-2000));
+  }
+  store.set('aihb_seen', Object.fromEntries(state.seen));
+  return fresh;
+}
+
+/* ---------- polling ---------- */
+async function poll() {
+  if (state.busy) return;
+  state.busy = true;
+  $('#refreshBtn').disabled = true;
+  const results = await Promise.allSettled(SOURCES.map((s) => s.run()));
+  const okCount = results.filter((r) => r.status === 'fulfilled').length;
+
+  const firstRun = !store.get('aihb_init', false);
+  const fresh = firstRun ? [] : detectFresh(results);
+  ingest(results);
+  if (firstRun) { // seed seen-set silently, then surface just the top story once
+    for (const it of state.items) state.seen.set(it.id, Date.now());
+    store.set('aihb_seen', Object.fromEntries(state.seen));
+    store.set('aihb_init', true);
+    state.freshIds.clear();
+  } else {
+    fresh.forEach((f) => state.freshIds.add(f.id));
+  }
+
+  state.lastUp = new Date();
+  state.ds = okCount > 0 ? 'live' : (loadFallback() ? 'cached' : 'bundled');
+  state.rendered = PAGE;
+  renderStatus(okCount);
+  renderCounts();
+  renderFeed();
+  if (okCount > 0) saveCache();
+
+  if (!state.initShown) { // first visit ever: show the single newest story as a welcome ticker
+    state.initShown = true;
+    if (state.items[0]) showBanner([state.items[0]], true);
+  } else if (fresh.length) {
+    showBanner(fresh);
+  }
+
+  state.busy = false;
+  $('#refreshBtn').disabled = false;
+  scheduleNext();
+}
+function loadFallback() {
+  const cached = store.get('aihb_cache', null);
+  const pick = cached && cached.items?.length ? cached.items : SEED;
+  if (!pick.length) return false;
+  state.items = pick.map((x) => ({ ...x }));
+  return cached && cached.items?.length ? 'cached' : 'bundled';
+}
+function saveCache() {
+  store.set('aihb_cache', { at: Date.now(), items: state.items.slice(0, 120) });
+}
+let pollTimer = null;
+function scheduleNext() {
+  clearTimeout(pollTimer);
+  state.nextAt = Date.now() + POLL_MS;
+  pollTimer = setTimeout(() => { if (!document.hidden) poll(); else scheduleNext(); }, POLL_MS);
+}
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && state.nextAt && Date.now() >= state.nextAt - 1000) poll();
+});
+setInterval(() => { // countdown display
+  const el = $('#nextTick');
+  if (!state.nextAt) { el.textContent = ''; return; }
+  const left = Math.max(0, state.nextAt - Date.now());
+  const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
+  el.textContent = `${t('nextWord')} ${m}:${String(s).padStart(2, '0')}`;
+}, 1000);
+
+/* ---------- banner ---------- */
+function showBanner(items, isLatest = false) {
+  state.bq = items.slice(0, 5);
+  state.bi = 0;
+  state.bIsLatest = isLatest;
+  $('#bPill').textContent = isLatest ? t('latest') : t('breaking');
+  renderBannerItem();
+  const b = $('#banner');
+  b.classList.remove('hidden');
+  const reveal = () => b.classList.add('show');
+  requestAnimationFrame(reveal);
+  setTimeout(reveal, 150); // embedded WebViews may freeze rAF; this guarantees the reveal
+  startRotation();
+}
+function renderBannerItem() {
+  const it = state.bq[state.bi];
+  if (!it) return;
+  const link = $('#bannerLink');
+  link.href = it.u;
+  $('#bannerTitle').textContent = it.t;
+  $('#bannerMeta').textContent = `· ${it.s} · ${ago(it.d)}`;
+  $('#bannerCount').textContent = state.bq.length > 1 ? `${state.bi + 1}/${state.bq.length}` : '';
+}
+function startRotation() {
+  clearInterval(state.bTimer);
+  if (state.bq.length > 1) state.bTimer = setInterval(() => {
+    state.bi = (state.bi + 1) % state.bq.length;
+    renderBannerItem();
+  }, 4500);
+}
+$('#bannerClose').addEventListener('click', () => {
+  clearInterval(state.bTimer);
+  const b = $('#banner');
+  b.classList.remove('show');
+  setTimeout(() => b.classList.add('hidden'), 380);
+});
+$('#banner').addEventListener('mouseenter', () => clearInterval(state.bTimer));
+$('#banner').addEventListener('mouseleave', () => startRotation());
+
+/* ---------- rendering ---------- */
+const CAT_PILL = { money: 'catMoney', models: 'catModels', deals: 'catDeals' };
+const CAT_EMOJI = { money: '💰', models: '🧠', deals: '🎁' };
+function renderCounts() {
+  const n = { all: state.items.length, money: 0, models: 0, deals: 0 };
+  for (const it of state.items) if (n[it.c] != null) n[it.c]++;
+  for (const k of Object.keys(n)) $(`#cnt-${k}`).textContent = n[k];
+}
+function filteredItems() {
+  const q = state.q.toLowerCase();
+  return state.items.filter((it) =>
+    (state.cat === 'all' || it.c === state.cat) &&
+    (!q || (it.t + ' ' + it.s).toLowerCase().includes(q)));
+}
+function renderFeed() {
+  const list = filteredItems();
+  const feed = $('#feed');
+  const shown = list.slice(0, state.rendered);
+  feed.innerHTML = shown.map((it, i) => {
+    const stats = [
+      it.p ? `<span class="chip stat">▲ ${fmtK(it.p)}</span>` : '',
+      it.st ? `<span class="chip stat">★ ${fmtK(it.st)}</span>` : '',
+      it.dn ? `<span class="chip stat">⬇ ${fmtK(it.dn)}</span>` : '',
+    ].join('');
+    const newPill = state.freshIds.has(it.id) ? `<span class="pill new">${esc(t('newBadge'))}</span>` : '';
+    const lang = it.g === 'z' ? '<span class="chip">中</span>' : '';
+    return `<li class="row${state.freshIds.has(it.id) ? ' flash' : ''}" data-url="${esc(it.u)}">
+      <span class="rank">${i + 1}</span>
+      <div class="body">
+        <a class="t" href="${esc(it.u)}" target="_blank" rel="noopener">${esc(it.t)}</a>
+        <div class="meta">
+          <span class="pill ${it.c}">${CAT_EMOJI[it.c] || ''} ${esc(t(CAT_PILL[it.c] || ''))}</span>
+          <span class="chip">${esc(it.s)}</span>${lang}
+          <span class="chip">${ago(it.d)}</span>${stats}${newPill}
+        </div>
+      </div></li>`;
+  }).join('');
+  $('#empty').hidden = list.length > 0;
+  $('#moreBtn').hidden = list.length <= state.rendered;
+}
+$('#feed').addEventListener('click', (e) => {
+  if (e.target.closest('a')) return;
+  const row = e.target.closest('.row');
+  if (row?.dataset.url) window.open(row.dataset.url, '_blank', 'noopener');
+});
+function renderStatus(okCount) {
+  state.okCount = okCount;
+  const dot = $('#statusDot');
+  dot.className = 'dot ' + (state.ds === 'live' ? 'live' : state.ds ? 'warn' : '');
+  const hhmm = state.lastUp ? state.lastUp.toLocaleTimeString(state.lang === 'zh' ? 'zh-CN' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : '—';
+  let text;
+  if (state.busy && !state.lastUp) {
+    text = t('loading');
+  } else {
+    text = `${okCount} ${t('sourcesWord')} · ${state.items.length} ${t('itemsWord')} · ${t('updatedWord')} ${hhmm}`;
+    if (state.lastUp && state.ds !== 'live') text += ' · ' + t('offlineNote');
+  }
+  $('#statusText').textContent = text;
+  document.title = t('title');
+}
+
+/* ---------- controls ---------- */
+$('#tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  state.cat = btn.dataset.cat;
+  document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b === btn));
+  state.rendered = PAGE;
+  renderFeed();
+});
+let searchTimer;
+$('#search').addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { state.q = e.target.value.trim(); state.rendered = PAGE; renderFeed(); }, 180);
+});
+$('#moreBtn').addEventListener('click', () => { state.rendered += PAGE; renderFeed(); });
+$('#refreshBtn').addEventListener('click', () => poll());
+
+/* ---------- theme & language ---------- */
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  $('#themeBtn').textContent = theme === 'light' ? '🌙' : '☀️';
+  store.set('aihb_theme', theme);
+}
+$('#themeBtn').addEventListener('click', () => {
+  const cur = document.documentElement.dataset.theme;
+  applyTheme(cur === 'light' ? 'dark' : 'light');
+});
+function applyLang(lang, { updateUrl = true } = {}) {
+  state.lang = lang;
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.title = t('title');
+  $('#langBtn').textContent = lang === 'zh' ? 'EN' : '中文';
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const v = I18N[lang][el.dataset.i18n];
+    if (v != null) el.textContent = v;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
+    const v = I18N[lang][el.dataset.i18nPh];
+    if (v != null) el.placeholder = v;
+  });
+  renderStatus(state.okCount);
+  renderCounts(); renderFeed();
+  if (state.bq.length) {
+    $('#bPill').textContent = state.bIsLatest ? t('latest') : t('breaking');
+    renderBannerItem();
+  }
+  store.set('aihb_lang', lang);
+  if (updateUrl) {
+    const u = new URL(location.href);
+    if (lang === I18N_EN_DEFAULT) u.searchParams.delete('lang'); else u.searchParams.set('lang', lang);
+    history.replaceState(null, '', u);
+  }
+}
+const I18N_EN_DEFAULT = 'en';
+$('#langBtn').addEventListener('click', () => applyLang(state.lang === 'zh' ? 'en' : 'zh'));
+
+/* ---------- boot ---------- */
+(function init() {
+  const params = new URLSearchParams(location.search);
+  // resolve language: URL ?lang= > localStorage > browser locale
+  const urlLang = params.get('lang');
+  const savedLang = store.get('aihb_lang', null);
+  const browserLang = (navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  applyLang(urlLang === 'zh' || urlLang === 'en' ? urlLang : (savedLang || browserLang), { updateUrl: false });
+
+  const savedTheme = store.get('aihb_theme', null);
+  applyTheme(savedTheme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+
+  for (const [k, v] of Object.entries(store.get('aihb_seen', {}))) state.seen.set(k, v);
+  const cached = store.get('aihb_cache', null);
+  if (cached?.items?.length) state.items = cached.items;
+
+  renderCounts(); renderFeed(); renderStatus(0);
+  poll();
+})();
+
+/* debug hooks (used by automated smoke tests; harmless in production) */
+window.Aihb = { state, showBanner, poll, classify, _reset: () => { localStorage.clear(); } };
+</script>
+</body>
+</html>
