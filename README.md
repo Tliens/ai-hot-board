@@ -4,7 +4,7 @@ Live board of AI money-making news, large-model releases and AI deals/free credi
 
 实时 AI 情报站：AI 创业搞钱 · 大模型动态 · 优惠福利，每 5 分钟自动刷新，新消息从顶部资讯条弹出，点击直达原文。
 
-**URL**: https://tliens.github.io/ai-hot-board/
+**URL**: https://ai-hot-board.kuige.me/
 
 ## How it works / 工作原理
 
